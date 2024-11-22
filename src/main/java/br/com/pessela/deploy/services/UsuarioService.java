@@ -10,6 +10,7 @@ import br.com.pessela.deploy.config.JwtUtil;
 import br.com.pessela.deploy.dto.UsuarioDto;
 import br.com.pessela.deploy.dto.UsuarioResponseDto;
 import br.com.pessela.deploy.models.Usuario;
+import br.com.pessela.deploy.procuders.UserProducer;
 import br.com.pessela.deploy.repositories.UsuarioRepository;
 
 import java.util.Date;
@@ -25,6 +26,9 @@ public class UsuarioService {
 
     @Autowired
     private PasswordEncoder passwordEncoder; 
+
+     @Autowired
+    private UserProducer userProducer;
 
     @Autowired
     private JwtUtil jwtUtil;
@@ -59,7 +63,7 @@ public class UsuarioService {
     
         // Salvar o usuário no banco de dados
         Usuario salvarUsuario = usuarioRepository.save(usuario);
-        
+        userProducer.sendEmail(salvarUsuario);
         return salvarUsuario;
     }
     
