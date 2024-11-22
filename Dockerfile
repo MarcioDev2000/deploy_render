@@ -9,7 +9,7 @@ RUN mvn clean install
 
 FROM openjdk:17-jdk-slim
 
-EXPOSE 8080
+EXPOSE 8082
 
 COPY --from=build /target/deploy_render-0.0.1.jar app.jar
 
