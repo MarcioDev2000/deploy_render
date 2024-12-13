@@ -1,0 +1,59 @@
+name: Build, Test and Deploy Docker Image
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Passo 1: Checkout do código
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # Passo 2: Configurar JDK 17
+      - name: Set up JDK 17
+        uses: actions/setup-java@v2
+        with:
+          java-version: '17'
+
+      # Passo 3: Instalar dependências do Maven e rodar os testes
+      - name: Set up Maven
+        uses: actions/setup-maven@v2
+        with:
+          maven-version: '3.8.4'
+      
+      - name: Build and Test
+        run: mvn clean install
+
+      # Passo 4: Construir a imagem Docker
+      - name: Build Docker image
+        run: |
+          docker build -t deploy_render:latest .
+
+      # Passo 5: Rodar o Docker container (opcional para testes)
+      - name: Run Docker container
+        run: |
+          docker run -d -p 8082:8082 deploy_render:latest
+          
+      # Passo 6: Exibir logs do Docker (opcional para depuração)
+      - name: Show Docker logs
+        run: |
+          docker logs $(docker ps -q)
+          
+      # Passo 7: Enviar a imagem para DockerHub (opcional, se necessário)
+      - name: Push Docker image to DockerHub
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+          docker tag deploy_render:latest $DOCKER_USERNAME/deploy_render:latest
+          docker push $DOCKER_USERNAME/deploy_render:latest
+
